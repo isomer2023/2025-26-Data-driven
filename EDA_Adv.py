@@ -97,6 +97,7 @@ plt.show()
 
 
 #Correlation heatmap
+#When one variable changes, how likely is the other to change with it, and in which direction
 
 plt.figure(figsize=(12, 10))
 corr = daily_types.corr()
