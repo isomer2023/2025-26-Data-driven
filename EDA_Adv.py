@@ -27,9 +27,9 @@ daily_gen = df_gen.resample('D').mean(numeric_only=True)
 daily_types = df_types.resample('D').mean(numeric_only=True)
 
 
-# -----------------------------
-# 📊 1. Plot daily Load & Generation
-# -----------------------------
+
+#Plot daily Load & Generation
+
 plt.figure(figsize=(14, 5))
 plt.plot(daily_load.index, daily_load["Actual Total Load (MW)"], label="Actual Load")
 plt.plot(daily_load.index, daily_load["Day-ahead Total Load Forecast (MW)"], label="Forecast Load", linestyle='--')
@@ -42,9 +42,9 @@ plt.tight_layout()
 plt.savefig("plots/daily_load_vs_gen.png", dpi=300, bbox_inches='tight')
 plt.show()
 
-# -----------------------------
-# 📊 2. Generation by type (stacked area chart)
-# -----------------------------
+
+#Generation by type (stacked area chart)
+
 daily_types_sorted = daily_types[daily_types.columns.sort_values()]  # optional sort
 daily_types_sorted.plot.area(stacked=True, figsize=(14, 6), alpha=0.85)
 plt.title("Daily Generation by Type (Stacked Area)")
@@ -54,9 +54,8 @@ plt.tight_layout()
 plt.savefig("plots/gen_type.png", dpi=300, bbox_inches='tight')
 plt.show()
 
-# -----------------------------
-# 📊 3. Monthly average (bar chart)
-# -----------------------------
+
+#Monthly average
 monthly_load = df_load.resample('M').mean()
 monthly_gen = df_gen.resample('M').mean()
 
@@ -74,9 +73,9 @@ plt.tight_layout()
 plt.savefig("plots/monthly_gen_load.png", dpi=300, bbox_inches='tight')
 plt.show()
 
-# -----------------------------
-# 📊 4. Peak Hour Analysis (mean by hour)
-# -----------------------------
+
+#Peak Hour Analysis
+
 df_load["hour"] = df_load.index.hour
 df_gen["hour"] = df_gen.index.hour
 
@@ -96,9 +95,9 @@ plt.tight_layout()
 plt.savefig("plots/Peak_analysis.png", dpi=300, bbox_inches='tight')
 plt.show()
 
-# -----------------------------
-# 📊 5. Correlation heatmap
-# -----------------------------
+
+#Correlation heatmap
+
 plt.figure(figsize=(12, 10))
 corr = daily_types.corr()
 sns.heatmap(corr, annot=True, cmap="coolwarm", fmt=".2f")
