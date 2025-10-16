@@ -1,5 +1,37 @@
 import pandas as pd
 from pathlib import Path
+import matplotlib.pyplot as plt
+
+# --- Muted color palette centered on #75896b ---
+palette = {
+    "primary": "#75896b",  # your key color
+    "blue":    "#6b7d91",
+    "red":     "#a06b6b",
+    "purple":  "#8a6b91",
+    "amber":   "#b09b6b"
+}
+
+# Update global Matplotlib style
+plt.rcParams.update({
+    "font.family": "serif",
+    "font.serif": ["Georgia", "DejaVu Serif", "Garamond"],
+    "font.size": 12,
+    "axes.titlesize": 15,
+    "axes.labelsize": 12,
+    "axes.edgecolor": "#3f4739",
+    "axes.labelcolor": "#3f4739",
+    "xtick.color": "#3f4739",
+    "ytick.color": "#3f4739",
+    "text.color": "#3f4739",
+    "axes.titlepad": 10,
+    "grid.color": "#c8d1bd",
+    "grid.alpha": 0.6,
+    "grid.linestyle": "--",
+    "axes.spines.top": False,
+    "axes.spines.right": False,
+    "figure.facecolor": "white",
+    "axes.facecolor": "white",
+})
 
 # ---------- Config ----------
 data_dir = Path("Load Data")
@@ -117,4 +149,59 @@ def main():
 
 if __name__ == "__main__":
     main()
+# Path to combined file
+data_dir = Path("Load Data")
+plots_dir = Path("plots")
+combined_file = data_dir / "TotalLoadDayAhead_Hour_2022_2024_combined.csv"
 
+
+# Load and prepare
+df_all = pd.read_csv(combined_file, parse_dates=["datetime"])
+df_all = df_all.sort_values("datetime")
+
+# Try to auto-detect column names
+cols = [c.lower() for c in df_all.columns]
+
+# Common ENTSO-E names: 'Total Load - Day Ahead [MW]', 'Total Load - Actual [MW]'
+col_actual = next((c for c in df_all.columns if "actual" in c.lower()), None)
+col_forecast = next((c for c in df_all.columns if "day" in c.lower() or "forecast" in c.lower()), None)
+
+if not col_actual or not col_forecast:
+    raise ValueError(f"Couldn’t find expected 'actual' and 'day-ahead' columns. Columns found: {df_all.columns.tolist()}")
+
+# --- Plot full period ---
+fig, ax = plt.subplots(figsize=(14, 6))
+ax.plot(df_all["datetime"], df_all[col_actual],
+        color=palette["primary"], label="Actual Load")
+ax.plot(df_all["datetime"], df_all[col_forecast],
+        color=palette["blue"], label="Day-Ahead Forecast", alpha=0.8, linewidth=1.6)
+
+ax.set_title("Electric Load – Actual vs Day-Ahead Forecast (2022-2024)")
+ax.set_xlabel("Date")
+ax.set_ylabel("Load [MW]")
+ax.grid(True)
+ax.legend(frameon=False)
+
+plt.tight_layout()
+fig.savefig(plots_dir / "TotalLoad_Actual_vs_DayAhead_2022_2024.png", dpi=300)
+
+# --- Optional: Zoom on a single period for clarity ---
+start, end = "2023-01-01", "2023-12-01"
+mask = (df_all["datetime"] >= start) & (df_all["datetime"] < end)
+df_zoom = df_all.loc[mask]
+
+fig, ax = plt.subplots(figsize=(14, 6))
+ax.plot(df_zoom["datetime"], df_zoom[col_actual],
+        color=palette["primary"], label="Actual Load")
+ax.plot(df_zoom["datetime"], df_zoom[col_forecast],
+        color=palette["blue"], label="Day-Ahead Forecast", alpha=0.8)
+
+ax.set_title(f"Zoomed View: {start} to {end}")
+ax.set_xlabel("Date")
+ax.set_ylabel("Load [MW]")
+ax.legend(frameon=False)
+ax.grid(True)
+
+plt.tight_layout()
+fig.savefig(plots_dir / f"TotalLoad_Zoom_{start}_to_{end}.png", dpi=300)
+plt.show()
