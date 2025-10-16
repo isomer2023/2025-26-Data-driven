@@ -22,9 +22,9 @@ df_load.set_index("datetime", inplace=True)
 df_gen.set_index("datetime", inplace=True)
 df_types.set_index("datetime", inplace=True)
 
-daily_load = df_load.resample('D').mean(numeric_only=True)
-daily_gen = df_gen.resample('D').mean(numeric_only=True)
-daily_types = df_types.resample('D').mean(numeric_only=True)
+daily_load = df_load.resample('D').mean(numeric_only=True)/1000
+daily_gen = df_gen.resample('D').mean(numeric_only=True)/1000
+daily_types = df_types.resample('D').mean(numeric_only=True)/1000
 
 
 
@@ -36,7 +36,7 @@ plt.plot(daily_load.index, daily_load["Day-ahead Total Load Forecast (MW)"], lab
 plt.plot(daily_gen.index, daily_gen["Average_Hourly_Generation"], label="Total Generation", alpha=0.7)
 plt.title("Daily Load vs Forecast vs Total Generation")
 plt.xlabel("Date")
-plt.ylabel("Power (MW)")
+plt.ylabel("Power (GW)")
 plt.legend()
 plt.tight_layout()
 plt.savefig("plots/daily_load_vs_gen.png", dpi=300, bbox_inches='tight')
@@ -45,19 +45,19 @@ plt.show()
 
 #Generation by type (stacked area chart)
 
-daily_types_sorted = daily_types[daily_types.columns.sort_values()]  # optional sort
-daily_types_sorted.plot.area(stacked=True, figsize=(14, 6), alpha=0.85)
+#daily_types_sorted = daily_types[daily_types.columns.sort_values()]  # optional sort
+daily_types.plot.area(stacked=True, figsize=(14, 6), alpha=0.85)
 plt.title("Daily Generation by Type (Stacked Area)")
 plt.xlabel("Date")
-plt.ylabel("Power (MW)")
+plt.ylabel("Power (GW)")
 plt.tight_layout()
 plt.savefig("plots/gen_type.png", dpi=300, bbox_inches='tight')
 plt.show()
 
 
 #Monthly average
-monthly_load = df_load.resample('M').mean()
-monthly_gen = df_gen.resample('M').mean()
+monthly_load = df_load.resample('M').mean()/1000
+monthly_gen = df_gen.resample('M').mean()/1000
 
 monthly = pd.DataFrame({
     "Actual Load": monthly_load["Actual Total Load (MW)"],
@@ -67,7 +67,7 @@ monthly = pd.DataFrame({
 
 monthly.plot(kind='bar', figsize=(14, 6))
 plt.title("Monthly Average: Load and Generation")
-plt.ylabel("Power (MW)")
+plt.ylabel("Power (GW)")
 plt.xticks(rotation=45)
 plt.tight_layout()
 plt.savefig("plots/monthly_gen_load.png", dpi=300, bbox_inches='tight')
@@ -79,15 +79,15 @@ plt.show()
 df_load["hour"] = df_load.index.hour
 df_gen["hour"] = df_gen.index.hour
 
-load_by_hour = df_load.groupby("hour")[["Actual Total Load (MW)"]].mean()
-gen_by_hour = df_gen.groupby("hour")[["Average_Hourly_Generation"]].mean()
+load_by_hour = df_load.groupby("hour")[["Actual Total Load (MW)"]].mean()/1000
+gen_by_hour = df_gen.groupby("hour")[["Average_Hourly_Generation"]].mean()/1000
 
 plt.figure(figsize=(10, 5))
 plt.plot(load_by_hour.index, load_by_hour["Actual Total Load (MW)"], label="Load by Hour")
 plt.plot(gen_by_hour.index, gen_by_hour["Average_Hourly_Generation"], label="Generation by Hour", linestyle="--")
 plt.title("Average Load and Generation by Hour of Day")
 plt.xlabel("Hour")
-plt.ylabel("Power (MW)")
+plt.ylabel("Power (GW)")
 plt.xticks(range(0, 24))
 plt.legend()
 plt.grid(True)
